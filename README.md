@@ -4,72 +4,43 @@ A repository for Go language projects and applications.
 
 ---
 
-## 🧮 Calculator (GUI)
+## 📁 Projects
 
-A cross-platform desktop GUI calculator built using Go and the [Fyne v2](https://fyne.io/) GUI toolkit.
+1. **[🧮 Calculator (GUI)](./calculator)**: A desktop GUI calculator built using Go and [Fyne v2](https://fyne.io/).
+2. **[🌐 REST API](./rest-api)**: A lightweight, thread-safe RESTful API built in Go using standard library `net/http`.
+
+---
+
+## 🧮 1. Calculator (GUI)
 
 ### Features
-- Standard arithmetic operations: addition (`+`), subtraction (`-`), multiplication (`×`), division (`÷`), percentage (`%`)
+- Standard arithmetic operations (`+`, `-`, `×`, `÷`, `%`)
 - Sign toggle (`±`), clear (`C`), and backspace (`⌫`)
 - Modern dark-themed user interface
 
----
-
-## 🚀 How to Run
-
-### 1. Prerequisites
-Ensure you have [Go](https://go.dev/doc/install) (v1.22 or higher) installed on your system.
-
-#### Linux System Dependencies (for Fyne GUI)
-If running on Linux, Fyne requires standard C compiler graphics development packages:
-- **Ubuntu/Debian**:
-  ```bash
-  sudo apt update
-  sudo apt install golang gcc libgl1-mesa-dev xorg-dev
-  ```
-- **Fedora**:
-  ```bash
-  sudo dnf install golang gcc libX11-devel libXcursor-devel libXrandr-devel libXinerama-devel mesa-libGL-devel libXi-devel libXxf86vm-devel
-  ```
-- **Arch Linux**:
-  ```bash
-  sudo pacman -S go gcc libxcursor libxrandr libxinerama libxi mesa
-  ```
-
----
-
-### 2. Running the Application
-
-1. **Clone the Repository** (if not already local):
-   ```bash
-   git clone https://github.com/Ashwin-arch/Go_lang.git
-   cd Go_lang/calculator
-   ```
-
-2. **Download Dependencies**:
-   ```bash
-   go mod download
-   ```
-
-3. **Run Directly**:
-   ```bash
-   go run main.go
-   ```
-   *or*
-   ```bash
-   go run .
-   ```
-
----
-
-### 3. Building an Executable
-
-To compile a standalone binary executable:
-
+### How to Run Calculator
 ```bash
-go build -o calculator main.go
+cd calculator
+go run .
 ```
 
-Then launch the executable:
-- **Linux / macOS**: `./calculator`
-- **Windows**: `calculator.exe`
+---
+
+## 🌐 2. REST API
+
+### Features
+- Full CRUD operations for a Book inventory (`GET`, `POST`, `PUT`, `DELETE`)
+- Thread-safe in-memory data storage using `sync.RWMutex`
+- Standard library routing (`net/http`) without third-party dependencies
+
+### How to Run REST API
+```bash
+cd rest-api
+go run main.go
+```
+The server will run on `http://localhost:8080`.
+
+#### Test Endpoint Example
+```bash
+curl http://localhost:8080/api/books
+```
