@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yios - AI Kubernetes Platform Control Plane</title>
+  <!-- Google Fonts: Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="logo-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <span class="brand-title">Yios<span class="brand-sub">K8s AI Platform</span></span>
+      </div>
+
+      <div class="nav-actions">
+        <div class="k8s-badge">
+          <span class="pulse-dot"></span>
+          <span>Dual-Mode K8s Cluster: Ready</span>
+        </div>
+        <div class="user-profile">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          <span>developer@yios.ai</span>
+        </div>
+        <button class="btn btn-primary" onclick="toggleModal('deploy-modal')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>Deploy AI Model</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Platform Overview Stats -->
+  <header class="stats-header">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-title">Total AI Services</div>
+        <div class="stat-value" id="stat-total-deployments">0</div>
+        <div class="stat-sub">FastAPI, Ollama & vLLM</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-title">Active Pod Replicas</div>
+        <div class="stat-value" id="stat-active-pods">0</div>
+        <div class="stat-sub">Autoscaled (HPA 1→100)</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-title">Average CPU Load</div>
+        <div class="stat-value" id="stat-avg-cpu">0%</div>
+        <div class="stat-sub">Target 80% Utilization</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-title">Cluster Memory Footprint</div>
+        <div class="stat-value" id="stat-total-mem">0 GB</div>
+        <div class="stat-sub">VRAM & System RAM</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Deployments Section -->
+  <main class="main-container">
+    <div class="section-title-bar">
+      <h2>Active AI Model Deployments</h2>
+      <button class="btn btn-outline" onclick="loadDeployments()">Refresh Status</button>
+    </div>
+
+    <div class="deployments-grid" id="deployments-grid">
+      <!-- Loaded dynamically via JS -->
+    </div>
+  </main>
+
+  <!-- DEPLOY NEW MODEL MODAL -->
+  <div class="modal-backdrop hidden" id="deploy-modal">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h2>Deploy New AI Service</h2>
+        <button class="close-btn" onclick="toggleModal('deploy-modal')">&times;</button>
+      </div>
+      <form onsubmit="handleCreateDeployment(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Service / Model Name</label>
+            <input type="text" id="deploy-name" placeholder="e.g. vllm-deepseek-7b" required>
+          </div>
+          <div class="form-group">
+            <label>AI Framework Runtime</label>
+            <select id="deploy-framework" required onchange="handleFrameworkChange(this.value)">
+              <option value="FASTAPI">FastAPI (Python REST Server)</option>
+              <option value="OLLAMA">Ollama (Local LLM Server)</option>
+              <option value="VLLM">vLLM (GPU PagedAttention Engine)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Source Payload Type</label>
+            <select id="deploy-sourcetype" required onchange="handleSourceTypeChange(this.value)">
+              <option value="GITHUB_REPO">GitHub Repository</option>
+              <option value="DOCKERFILE">Custom Dockerfile Code</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Initial Pod Replicas (1 - 100)</label>
+            <input type="number" id="deploy-replicas" min="1" max="100" value="2" required>
+          </div>
+        </div>
+
+        <div class="form-group" id="group-source-url">
+          <label>GitHub Repository URL</label>
+          <input type="url" id="deploy-sourceurl" placeholder="https://github.com/org/ai-model.git">
+        </div>
+
+        <div class="form-group hidden" id="group-dockerfile">
+          <label>Custom Dockerfile</label>
+          <textarea id="deploy-dockerfile" rows="4" class="code-area" placeholder="FROM python:3.10-slim..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Container Image Tag</label>
+            <input type="text" id="deploy-imagetag" placeholder="yios-registry/my-model:v1.0.0">
+          </div>
+          <div class="form-group">
+            <label>Memory Request</label>
+            <input type="text" id="deploy-memory" placeholder="1Gi or 8Gi">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px;">Synthesize K8s Manifests & Deploy</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCALING MODAL -->
+  <div class="modal-backdrop hidden" id="scale-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Elastic Replicas Scaling</h2>
+        <button class="close-btn" onclick="toggleModal('scale-modal')">&times;</button>
+      </div>
+      <form onsubmit="handleScaleSubmit(event)">
+        <input type="hidden" id="scale-deploy-id">
+        <div class="form-group" style="text-align:center;">
+          <h3 id="scale-model-name">Service Name</h3>
+          <div class="scale-display" id="scale-val-display">5 Replicas</div>
+          <input type="range" id="scale-slider" min="1" max="100" value="5" style="width:100%; margin:16px 0;" oninput="updateScaleDisplay(this.value)">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Apply Replica Scaling</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- REVISIONS & ROLLBACK MODAL -->
+  <div class="modal-backdrop hidden" id="revisions-modal">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h2>Deployment Revisions & Rollback</h2>
+        <button class="close-btn" onclick="toggleModal('revisions-modal')">&times;</button>
+      </div>
+      <div class="revision-history-list" id="revisions-list">
+        <!-- Loaded dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- POD METRICS & LOGS MODAL -->
+  <div class="modal-backdrop hidden" id="metrics-modal">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h2>Live Kubernetes Pods & Metrics</h2>
+        <button class="close-btn" onclick="toggleModal('metrics-modal')">&times;</button>
+      </div>
+      <div id="metrics-content">
+        <!-- Loaded dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- K8S MANIFEST MODAL -->
+  <div class="modal-backdrop hidden" id="manifest-modal">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h2>Kubernetes Manifest YAML Preview</h2>
+        <button class="close-btn" onclick="toggleModal('manifest-modal')">&times;</button>
+      </div>
+      <pre class="code-block" id="manifest-yaml-text">Loading YAML...</pre>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

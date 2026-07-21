@@ -12,6 +12,7 @@ A repository for Go language projects and applications.
 4. **[🔒 4. Authentication System](#-4-authentication-system)**: A secure authentication system in Go featuring **Bcrypt password hashing**, **HTTP-Only session cookies**, and a modern **Glassmorphic web interface** (HTML/CSS/JS).
 5. **[🛒 5. E-commerce REST API (Gin)](#-5-e-commerce-rest-api-gin)**: A full-featured e-commerce backend built with the **Gin Framework**, **GORM**, and **SQLite**, featuring atomic database transactions for checkout.
 6. **[🏦 6. Banking REST API (Echo)](#-6-banking-rest-api-echo)**: A financial banking backend built with the **Echo Framework**, **GORM**, and **SQLite**, featuring ACID transactional transfers with pessimistic row locking (`FOR UPDATE`) and audit logging.
+7. **[🤖 7. Yios - AI Kubernetes Platform](#-7-yios---ai-kubernetes-platform)**: An AI deployment and orchestration control plane platform built with **Go (Gin)**, **GORM**, and a **Dual-Mode Kubernetes Controller**, featuring 1-click elastic scaling (1 → 100 replicas), AI model runtime provisioning (**FastAPI**, **Ollama**, **vLLM**), rolling updates, 1-click rollbacks, and an interactive glassmorphic dashboard.
 
 ---
 
@@ -19,71 +20,11 @@ A repository for Go language projects and applications.
 
 A cross-platform desktop calculator application built using Go and Fyne v2.
 
-### ✨ Features
-- Standard arithmetic operations (`+`, `-`, `×`, `÷`, `%`)
-- Sign toggle (`±`), clear (`C`), and backspace (`⌫`)
-- Divide-by-zero error handling (`Error: Div by 0`)
-- Modern dark-themed user interface with color-coded button importance levels
-
-### ⚙️ Prerequisites & Running
-
-```bash
-cd calculator
-go run .
-```
-
-To build a standalone desktop executable:
-```bash
-cd calculator
-go build -o calculator main.go
-./calculator
-```
-
-### 📂 Detailed Code Explanations & Architecture (`calculator/main.go`)
-
-The GUI Calculator logic is contained within `calculator/main.go`:
-
-#### 1. State Management (`calculator` struct)
-```go
-type calculator struct {
-    display *widget.Entry
-    op      string
-    val1    float64
-    newNum  bool
-}
-```
-- **`display`**: Reference to the Fyne input widget showing current values and results.
-- **`op`**: Holds the pending arithmetic operator (`"+"`, `"-"`, `"×"`, `"÷"`, `"%"`).
-- **`val1`**: Stores the first operand when an operation is triggered.
-- **`newNum`**: Boolean flag indicating whether entering a digit should replace the display text or append to it.
-
-#### 2. Operations & Error Handling
-- **`input(digit)`**: Appends numbers or decimals to the display, preventing duplicate decimal points.
-- **`setOp(op)`**: Saves the current display value into `val1`, assigns `op`, and sets `newNum = true`. Chained operations (e.g., `5 + 3 + 2`) compute intermediate results automatically.
-- **`compute()`**: Parses operand 2, executes the pending operation via a `switch` statement, handles divide-by-zero (`val2 == 0`), and formats floating-point output cleanly with `strconv.FormatFloat`.
-- **`toggleSign()`, `backspace()`, `clear()`**: Helper methods for sign inversion, character deletion, and calculator reset.
-
-#### 3. Fyne UI Composition
-- **Custom Button Builder (`makeButton`)**: Assigns Fyne importance levels (`HighImportance` for primary operators, `MediumImportance` for numbers, `LowImportance` for functions) to render distinct dark-mode button colors.
-- **Grid Layout (`container.NewGridWithColumns(4, ...)`)**: Arranges 20 buttons in a 4-column responsive grid.
-- **Border Layout (`container.NewBorder(...)`)**: Places the display entry at the top with padding and locks the button grid into the remaining space.
-
 ---
 
 ## 🌐 2. REST API
 
 A thread-safe RESTful API built in Go using **zero external dependencies**, leveraging Go's standard library `net/http` package and Go 1.22+ routing features.
-
-### ⚙️ Prerequisites & Running
-
-- **Go 1.22+** installed on your system (`go version`).
-
-#### 1. Run Directly from Source
-```bash
-cd rest-api
-go run main.go
-```
-The server will start listening at `http://localhost:8080`.
 
 ---
 
@@ -103,96 +44,93 @@ A secure authentication system in Go featuring **Bcrypt password hashing**, **HT
 
 A production-grade E-commerce RESTful API built using the **Gin Web Framework** (`github.com/gin-gonic/gin`), **GORM ORM** (`gorm.io/gorm`), and **SQLite** (`gorm.io/driver/sqlite`).
 
-### 🏛️ Architecture & Gin Framework
-
-```
-Client (cURL / Web / Postman)
-   │
-   ▼
-Gin Web Framework (Radix Tree Router, Middlewares, Context Controllers)
-   │
-   ▼
-GORM ORM Layer (Database Transactions, Model Relations, Auto-Migration)
-   │
-   ▼
-SQLite Database (Relational Store for Products, Categories, Cart, Orders)
-```
-
-- **Gin Framework**: Utilizes Gin's Radix tree router for high-performance HTTP request handling, custom middleware groups (`AuthMiddleware`, `AdminMiddleware`), and request binding validation.
-- **Atomic Checkout Transaction**: Checkout is executed inside a `db.Transaction(...)` block that validates product stock, deducts inventory, creates order items, and empties the shopping cart atomically.
-
-### 🚀 How to Run & Test
-```bash
-cd ecommerce-api
-go run main.go
-```
-Server runs at `http://localhost:8081`.
-
-#### Run Unit Tests
-```bash
-cd ecommerce-api
-go test -v ./...
-```
-
-### 📡 cURL Example
-```bash
-# Add product to cart
-curl -i -X POST http://localhost:8081/api/v1/cart/items \
-  -H "Content-Type: application/json" \
-  -H "X-User-ID: 1" \
-  -d '{"productId": 1, "quantity": 2}'
-
-# Execute Atomic Checkout
-curl -i -X POST http://localhost:8081/api/v1/orders/checkout \
-  -H "X-User-ID: 1"
-```
-
 ---
 
 ## 🏦 6. Banking REST API (Echo)
 
 A financial Banking RESTful API built using the **Echo Web Framework** (`github.com/labstack/echo/v4`), **GORM ORM** (`gorm.io/gorm`), and **SQLite** (`gorm.io/driver/sqlite`).
 
-### 🏛️ Architecture & Echo Framework
+---
+
+## 🤖 7. Yios - AI Kubernetes Platform
+
+An AI Kubernetes deployment and orchestration platform designed to automate container builds, AI inference engine provisioning (**FastAPI**, **Ollama**, **vLLM**), Kubernetes manifest synthesis, elastic auto-scaling (1 → 100 replicas), zero-downtime rolling updates, 1-click rollbacks, and real-time Pod metrics/log streaming.
+
+### 🏛️ Architecture Overview
 
 ```
-Client (Mobile App / Web / ATM / cURL)
-   │
-   ▼
-Echo Web Server (Context Binding, Echo Middlewares & Handlers)
-   │
-   ▼
-GORM ORM Layer (ACID Transactions, Pessimistic Row Locking, Audit Ledger)
-   │
-   ▼
-SQLite Database (Persistent Relational Store for Accounts & Financial Transactions)
+                  +-----------------------------------+
+                  |      Yios React/TS Web UI         |
+                  |  (Live Dashboard, Scaling Sliders) |
+                  +-----------------+-----------------+
+                                    |
+                                    v
++-----------------------------------+-----------------------------------+
+|               Go Gin Control Plane REST Engine                       |
+|  (Auth, AI Runtime Synthesizer, Dual-Mode K8s Controller, Proxy Router) |
++------------------+---------------------------------+------------------+
+                   |                                 |
+                   v                                 v
++------------------+------------------+   +----------+-------------------+
+|    GORM SQLite / PostgreSQL DB      |   |  Kubernetes Cluster / Simulator  |
+|  (Users, Deployments, Revisions)    |   |  (Deployments, Services, Ingress)|
++-------------------------------------+   +----------------------------------+
 ```
 
-- **Echo Framework**: Features Echo's context abstraction (`echo.Context`), built-in logger & recovery middleware, and clean JSON controller signatures.
-- **ACID Transactional Fund Transfer**: Inter-account fund transfers execute inside a GORM transaction with pessimistic row locking (`FOR UPDATE`) to prevent race conditions and double-spending. Audit log records are created for every financial transaction.
+### ✨ Key Features
+- **🔐 User Authentication**: Developer accounts, login, and token session management.
+- **📦 Source Payload Ingestion**: Upload custom Dockerfiles or link GitHub Repositories.
+- **🤖 AI Runtimes**: Support for **FastAPI**, **Ollama** (`Llama3:8b`), and **vLLM** (PagedAttention GPU engine).
+- **⚙️ K8s Resource Auto-Synthesis**: Automatically generates `Deployment`, `Service`, `Ingress`, and `HPA` specs.
+- **📊 Real-time Monitoring**: Pod status tracking (`Running`, `Pending`), CPU & VRAM/RAM metrics, and live log stream viewer.
+- **📈 1-Click Elastic Scaling**: Scale replicas dynamically from **1 to 100** using UI sliders or API endpoint.
+- **🔄 Rolling Updates & Rollbacks**: Revisions history (`v1`, `v2`, `v3`) with 1-click rollbacks.
+- **🌐 Public Ingress Route Generation**: Public endpoint URLs (`http://model-name.yios.internal`) with inference proxy router.
 
 ### 🚀 How to Run & Test
 ```bash
-cd banking-api
+cd yios
 go run main.go
 ```
-Server runs at `http://localhost:8082`.
+Server runs at `http://localhost:8083`.
 
 #### Run Unit Tests
 ```bash
-cd banking-api
+cd yios
 go test -v ./...
 ```
 
-### 📡 cURL Example
+### 📡 cURL Examples
 ```bash
-# Deposit Funds into Account 1 ($500.00)
-curl -i -X POST http://localhost:8082/api/v1/accounts/1/deposit \
+# 1. Deploy New vLLM AI Model Service
+curl -i -X POST http://localhost:8083/api/v1/deployments \
   -H "Content-Type: application/json" \
-  -d '{"amount": 500.00, "description": "Salary Deposit"}'
+  -d '{
+    "name": "vllm-deepseek-7b",
+    "framework": "VLLM",
+    "sourceType": "GITHUB_REPO",
+    "sourceUrl": "https://github.com/vllm-project/vllm.git",
+    "imageTag": "vllm/vllm-openai:latest",
+    "replicas": 4,
+    "memoryRequest": "16Gi"
+  }'
 
-# Execute Atomic Fund Transfer (Account 1 -> Account 2, Amount: $1000.00)
-curl -i -X POST http://localhost:8082/api/v1/transfer \
+# 2. Scale Replicas to 50
+curl -i -X POST http://localhost:8083/api/v1/deployments/1/scale \
   -H "Content-Type: application/json" \
-  -d '{"fromAccountId": 1, "toAccountId": 2, "amount": 1000.00, "description": "Rent Payment"}'
+  -d '{"replicas": 50}'
+
+# 3. Trigger Rolling Update
+curl -i -X POST http://localhost:8083/api/v1/deployments/1/update \
+  -H "Content-Type: application/json" \
+  -d '{
+    "imageTag": "yios-registry/fastapi-sentiment:v2.0.0-gpu",
+    "commitSha": "f9e8d7c6",
+    "description": "Upgraded PyTorch runtime & enabled TensorRT acceleration"
+  }'
+
+# 4. Execute 1-Click Rollback to Revision 1
+curl -i -X POST http://localhost:8083/api/v1/deployments/1/rollback \
+  -H "Content-Type: application/json" \
+  -d '{"revisionNumber": 1}'
 ```

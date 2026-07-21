@@ -11,6 +11,7 @@ graphql-api/graphql-api
 auth-system/auth-system
 ecommerce-api/ecommerce-api
 banking-api/banking-api
+yios/yios
 *.db
 *.db-journal
 
