@@ -6,6 +6,8 @@
 *.dylib
 bin/
 calculator/calculator
+rest-api/rest-api
+graphql-api/graphql-api
 
 # Test binary built for 'go test'
 *.test
