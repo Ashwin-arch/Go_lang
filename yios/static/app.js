@@ -67,8 +67,9 @@ function renderDeployments(list) {
       </div>
 
       <div class="card-actions">
+        <button class="btn btn-primary btn-sm" onclick="openChatModal(${d.id})">💬 Chat</button>
         <button class="btn btn-outline btn-sm" onclick="showMetricsModal(${d.id})">📊 Metrics</button>
-        <button class="btn btn-primary btn-sm" onclick="showScaleModal(${d.id}, '${d.name}', ${d.replicas})">📈 Scale</button>
+        <button class="btn btn-outline btn-sm" onclick="showScaleModal(${d.id}, '${d.name}', ${d.replicas})">📈 Scale</button>
         <button class="btn btn-outline btn-sm" onclick="showRevisionsModal(${d.id})">🔄 Rollback</button>
         <button class="btn btn-outline btn-sm" onclick="showManifestModal(${d.id})">⚙️ YAML</button>
         <button class="btn btn-outline btn-sm" onclick="showLogsModal(${d.id})">📜 Logs</button>
@@ -341,4 +342,103 @@ function showToast(msg, type = 'success') {
   t.textContent = msg;
   container.appendChild(t);
   setTimeout(() => t.remove(), 3500);
+}
+
+// AI Chat Console Functions
+let activeChatDeployID = null;
+
+function openChatModal(targetDeployID = null) {
+  const select = document.getElementById('chat-model-select');
+  select.innerHTML = '';
+
+  if (deployments.length === 0) {
+    showToast('No deployments available to chat with', 'error');
+    return;
+  }
+
+  deployments.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d.id;
+    opt.textContent = `${d.name} (${d.framework})`;
+    select.appendChild(opt);
+  });
+
+  if (targetDeployID) {
+    select.value = targetDeployID;
+    activeChatDeployID = targetDeployID;
+  } else {
+    activeChatDeployID = deployments[0].id;
+  }
+
+  toggleModal('chat-modal');
+}
+
+function switchChatModel(id) {
+  activeChatDeployID = parseInt(id, 10);
+  const container = document.getElementById('chat-messages-container');
+  const d = deployments.find(item => item.id === activeChatDeployID);
+  const modelName = d ? d.name : 'AI Model';
+
+  container.innerHTML += `
+    <div class="chat-msg ai-msg">
+      <div class="chat-bubble" style="background:rgba(56,189,248,0.15); color:#38bdf8;">
+        🔄 Switched active AI conversation to <strong>${modelName}</strong>.
+      </div>
+    </div>
+  `;
+  container.scrollTop = container.scrollHeight;
+}
+
+async function handleSendChatMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById('chat-input-prompt');
+  const promptText = input.value.trim();
+  if (!promptText || !activeChatDeployID) return;
+
+  const container = document.getElementById('chat-messages-container');
+
+  // Render User Message Bubble
+  const userDiv = document.createElement('div');
+  userDiv.className = 'chat-msg user-msg';
+  userDiv.innerHTML = `<div class="chat-bubble">${promptText}</div>`;
+  container.appendChild(userDiv);
+
+  input.value = '';
+  container.scrollTop = container.scrollHeight;
+
+  // Render Thinking Indicator
+  const thinkingDiv = document.createElement('div');
+  thinkingDiv.className = 'chat-msg ai-msg';
+  thinkingDiv.innerHTML = `<div class="chat-bubble" style="color:#94a3b8;">⏳ AI is inferring on K8s cluster...</div>`;
+  container.appendChild(thinkingDiv);
+  container.scrollTop = container.scrollHeight;
+
+  try {
+    const res = await fetch(`/api/v1/deployments/${activeChatDeployID}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: promptText })
+    });
+    const data = await res.json();
+    thinkingDiv.remove();
+
+    if (res.ok) {
+      const aiDiv = document.createElement('div');
+      aiDiv.className = 'chat-msg ai-msg';
+      aiDiv.innerHTML = `
+        <div class="chat-bubble">
+          <div>${data.reply}</div>
+          <div style="font-size:11px; color:#94a3b8; margin-top:6px;">⚡ Latency: ${data.latencyMs}ms • Endpoint: <code>${data.endpoint}</code></div>
+        </div>
+      `;
+      container.appendChild(aiDiv);
+    } else {
+      showToast(data.error || 'AI Chat failed', 'error');
+    }
+  } catch (err) {
+    thinkingDiv.remove();
+    showToast('Failed to reach AI service', 'error');
+  }
+
+  container.scrollTop = container.scrollHeight;
 }

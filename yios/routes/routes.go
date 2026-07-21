@@ -56,6 +56,7 @@ func SetupRouter() *gin.Engine {
 			deploy.GET("/:id/logs", controllers.GetPodLogs)
 			deploy.GET("/:id/manifest", controllers.GetManifest)
 			deploy.POST("/:id/proxy", controllers.ProxyInference)
+			deploy.POST("/:id/chat", controllers.ChatInference)
 		}
 	}
 

@@ -170,4 +170,23 @@ body {
 .toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; }
 .toast { background: #059669; color: white; padding: 12px 20px; border-radius: 10px; font-weight: 600; margin-bottom: 10px; }
 
+/* Chat Console Styles */
+.chat-msg { display: flex; margin-bottom: 8px; }
+.user-msg { justify-content: flex-end; }
+.ai-msg { justify-content: flex-start; }
+
+.chat-bubble {
+  max-width: 80%; padding: 12px 16px; border-radius: 14px;
+  font-size: 14px; line-height: 1.5; word-break: break-word;
+}
+
+.user-msg .chat-bubble {
+  background: var(--primary); color: white; border-bottom-right-radius: 2px;
+}
+
+.ai-msg .chat-bubble {
+  background: rgba(30, 41, 59, 0.9); border: 1px solid var(--card-border);
+  color: var(--text-main); border-bottom-left-radius: 2px;
+}
+
 .hidden { display: none !important; }

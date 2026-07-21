@@ -36,6 +36,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           <span>developer@yios.ai</span>
         </div>
+        <button class="btn btn-outline" onclick="openChatModal()">💬 Chat Console</button>
         <button class="btn btn-primary" onclick="toggleModal('deploy-modal')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           <span>Deploy AI Model</span>
@@ -201,6 +202,35 @@
         <button class="close-btn" onclick="toggleModal('manifest-modal')">&times;</button>
       </div>
       <pre class="code-block" id="manifest-yaml-text">Loading YAML...</pre>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE AI CHAT MODAL -->
+  <div class="modal-backdrop hidden" id="chat-modal">
+    <div class="modal-card modal-lg" style="display:flex; flex-direction:column; height:80vh;">
+      <div class="modal-header">
+        <div>
+          <h2>💬 Live AI Model Chat Console</h2>
+          <div style="font-size:12px; color:#94a3b8;">Target Service: <select id="chat-model-select" onchange="switchChatModel(this.value)"></select></div>
+        </div>
+        <button class="close-btn" onclick="toggleModal('chat-modal')">&times;</button>
+      </div>
+
+      <div class="chat-messages" id="chat-messages-container" style="flex:1; overflow-y:auto; padding:12px; background:rgba(0,0,0,0.3); border-radius:12px; margin-bottom:16px; display:flex; flex-direction:column; gap:12px;">
+        <div class="chat-msg ai-msg">
+          <div class="chat-bubble">
+            🤖 <strong>Yios AI Router:</strong> Hello! Connected to Kubernetes AI Service. Type your prompt below to chat directly with the AI model!
+          </div>
+        </div>
+      </div>
+
+      <form onsubmit="handleSendChatMessage(event)" style="display:flex; gap:10px;">
+        <input type="text" id="chat-input-prompt" placeholder="Type your message to AI model..." required style="flex:1;">
+        <button type="submit" class="btn btn-primary">
+          <span>Send</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </form>
     </div>
   </div>
 
