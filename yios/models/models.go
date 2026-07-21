@@ -58,6 +58,7 @@ type Deployment struct {
 	Replicas       int              `gorm:"default:1" json:"replicas"`
 	Status         DeploymentStatus `gorm:"default:'DEPLOYED'" json:"status"`
 	PublicEndpoint string           `json:"publicEndpoint"`
+	ApiKey         string           `json:"apiKey,omitempty"`
 	CpuRequest     string           `gorm:"default:'500m'" json:"cpuRequest"`
 	MemoryRequest  string           `gorm:"default:'1Gi'" json:"memoryRequest"`
 	K8sNamespace   string           `gorm:"default:'default'" json:"k8sNamespace"`

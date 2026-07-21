@@ -17,6 +17,7 @@ type CreateDeployInput struct {
 	SourceURL     string             `json:"sourceUrl"`
 	Dockerfile    string             `json:"dockerfile"`
 	ImageTag      string             `json:"imageTag"`
+	ApiKey        string             `json:"apiKey"`
 	Replicas      int                `json:"replicas"`
 	CpuRequest    string             `json:"cpuRequest"`
 	MemoryRequest string             `json:"memoryRequest"`
@@ -93,6 +94,7 @@ func CreateDeployment(c *gin.Context) {
 		Replicas:       replicas,
 		Status:         models.StatusDeployed,
 		PublicEndpoint: publicEndpoint,
+		ApiKey:         input.ApiKey,
 		CpuRequest:     cpu,
 		MemoryRequest:  mem,
 		K8sNamespace:   "default",

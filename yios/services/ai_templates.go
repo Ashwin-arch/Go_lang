@@ -85,6 +85,9 @@ spec:
         image: %s
         ports:
         - containerPort: %d
+        env:
+        - name: NVIDIA_API_KEY
+          value: "%s"
         resources:
           requests:
             cpu: "%s"
@@ -145,7 +148,7 @@ spec:
       target:
         type: Utilization
         averageUtilization: 80
-`, d.Name, d.K8sNamespace, d.Name, d.Replicas, d.Name, d.Name, d.ImageTag, port, d.CpuRequest, d.MemoryRequest,
+`, d.Name, d.K8sNamespace, d.Name, d.Replicas, d.Name, d.Name, d.ImageTag, port, d.ApiKey, d.CpuRequest, d.MemoryRequest,
 		d.Name, d.K8sNamespace, d.Name, port,
 		d.Name, d.K8sNamespace, d.Name, d.Name,
 		d.Name, d.K8sNamespace, d.Name)

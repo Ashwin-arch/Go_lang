@@ -89,14 +89,14 @@ async function handleCreateDeployment(e) {
   const sourceUrl = document.getElementById('deploy-sourceurl').value;
   const dockerfile = document.getElementById('deploy-dockerfile').value;
   const imageTag = document.getElementById('deploy-imagetag').value;
-  const memoryRequest = document.getElementById('deploy-memory').value;
+  const apiKey = document.getElementById('deploy-apikey') ? document.getElementById('deploy-apikey').value : '';
 
   try {
     const res = await fetch('/api/v1/deployments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name, framework, sourceType, replicas, sourceUrl, dockerfile, imageTag, memoryRequest
+        name, framework, sourceType, replicas, sourceUrl, dockerfile, imageTag, apiKey
       })
     });
     const data = await res.json();
