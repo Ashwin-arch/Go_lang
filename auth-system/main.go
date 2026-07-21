@@ -26,7 +26,7 @@ func main() {
 
 	// Static assets handler
 	fileServer := http.FileServer(http.Dir("static"))
-	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
+	mux.Handle("GET /static/", http.StripPrefix("/static/", fileServer))
 
 	// API Endpoints
 	mux.HandleFunc("POST /api/signup", authHandler.Signup)
