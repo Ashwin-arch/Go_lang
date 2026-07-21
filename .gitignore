@@ -9,6 +9,10 @@ calculator/calculator
 rest-api/rest-api
 graphql-api/graphql-api
 auth-system/auth-system
+ecommerce-api/ecommerce-api
+banking-api/banking-api
+*.db
+*.db-journal
 
 # Test binary built for 'go test'
 *.test

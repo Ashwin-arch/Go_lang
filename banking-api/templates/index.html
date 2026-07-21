@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Echo Banking Dashboard</title>
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <span>EchoBank</span>
+      </div>
+
+      <div class="nav-actions">
+        <label for="account-selector" style="font-size:13px; color:#94a3b8;">Active Account:</label>
+        <select id="account-selector" onchange="handleAccountSwitch(this.value)">
+          <!-- Loaded dynamically -->
+        </select>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="app-container">
+    <!-- Account Balance Cards -->
+    <div class="balance-grid">
+      <div class="card balance-card">
+        <div class="card-title">Total Available Balance</div>
+        <div class="balance-amount" id="account-balance">$0.00</div>
+        <div class="account-meta">
+          <span id="account-num">ACC----</span> • <span id="account-holder">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Financial Quick Actions -->
+      <div class="card actions-card">
+        <h3>Quick Operations</h3>
+        <div class="action-buttons">
+          <button class="btn btn-deposit" onclick="toggleModal('deposit-modal')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Deposit</span>
+          </button>
+          <button class="btn btn-withdraw" onclick="toggleModal('withdraw-modal')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Withdraw</span>
+          </button>
+          <button class="btn btn-transfer" onclick="toggleModal('transfer-modal')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+            <span>Transfer Funds</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ledger Transaction History -->
+    <div class="card history-card">
+      <div class="history-header">
+        <h3>Ledger Transaction Statement</h3>
+        <button class="btn btn-outline" onclick="loadAccountTransactions()">Refresh</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="transaction-table">
+          <thead>
+            <tr>
+              <th>Reference No</th>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Date & Time</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody id="transaction-rows">
+            <!-- Loaded dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- DEPOSIT MODAL -->
+  <div class="modal-backdrop hidden" id="deposit-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Deposit Funds</h2>
+        <button class="close-btn" onclick="toggleModal('deposit-modal')">&times;</button>
+      </div>
+      <form onsubmit="handleDepositSubmit(event)">
+        <div class="form-group">
+          <label>Deposit Amount ($)</label>
+          <input type="number" step="0.01" id="deposit-amount" placeholder="500.00" required>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" id="deposit-desc" placeholder="Salary Bonus, Cash, etc.">
+        </div>
+        <button type="submit" class="btn btn-deposit" style="width:100%;">Confirm Deposit</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- WITHDRAW MODAL -->
+  <div class="modal-backdrop hidden" id="withdraw-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Withdraw Funds</h2>
+        <button class="close-btn" onclick="toggleModal('withdraw-modal')">&times;</button>
+      </div>
+      <form onsubmit="handleWithdrawSubmit(event)">
+        <div class="form-group">
+          <label>Withdrawal Amount ($)</label>
+          <input type="number" step="0.01" id="withdraw-amount" placeholder="200.00" required>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" id="withdraw-desc" placeholder="ATM Cash Withdrawal">
+        </div>
+        <button type="submit" class="btn btn-withdraw" style="width:100%;">Confirm Withdrawal</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TRANSFER MODAL -->
+  <div class="modal-backdrop hidden" id="transfer-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Atomic Fund Transfer</h2>
+        <button class="close-btn" onclick="toggleModal('transfer-modal')">&times;</button>
+      </div>
+      <form onsubmit="handleTransferSubmit(event)">
+        <div class="form-group">
+          <label>Destination Account</label>
+          <select id="transfer-to-account" required>
+            <!-- Loaded dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Transfer Amount ($)</label>
+          <input type="number" step="0.01" id="transfer-amount" placeholder="1000.00" required>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" id="transfer-desc" placeholder="Rent Payment, Bill Split, etc.">
+        </div>
+        <button type="submit" class="btn btn-transfer" style="width:100%;">Execute ACID Transfer</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gin E-commerce Storefront</title>
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <svg class="brand-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span>GinMarket</span>
+      </div>
+
+      <div class="nav-actions">
+        <div class="user-badge" id="nav-user-badge">
+          <span id="nav-user-name">Guest</span>
+        </div>
+        <button class="nav-btn" id="btn-cart" onclick="toggleCartModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+          </svg>
+          <span class="badge" id="cart-badge-count">0</span>
+        </button>
+        <button class="btn btn-outline" id="btn-auth-toggle" onclick="toggleAuthModal()">Sign In</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero & Category Bar -->
+  <header class="hero-section">
+    <h1>Discover Premium Tech & Books</h1>
+    <p>Powered by Go Gin REST Framework & SQLite GORM Transactions</p>
+    
+    <div class="filter-bar">
+      <div class="search-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-input" placeholder="Search products..." oninput="debounceSearch()">
+      </div>
+      <div class="category-tabs" id="category-tabs">
+        <button class="cat-btn active" data-id="all" onclick="filterCategory('all', this)">All Products</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Product Showcase Grid -->
+  <main class="main-container">
+    <div class="product-grid" id="product-grid">
+      <!-- Loaded dynamically via JS -->
+    </div>
+  </main>
+
+  <!-- CART MODAL -->
+  <div class="modal-backdrop hidden" id="cart-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Your Shopping Cart</h2>
+        <button class="close-btn" onclick="toggleCartModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="cart-items-list">
+        <!-- Loaded dynamically -->
+      </div>
+      <div class="modal-footer">
+        <div class="subtotal-box">
+          <span>Subtotal:</span>
+          <strong id="cart-subtotal">$0.00</strong>
+        </div>
+        <button class="btn btn-primary" onclick="handleCheckout()">
+          <span>Atomic Checkout</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div class="modal-backdrop hidden" id="auth-modal">
+    <div class="modal-card auth-card">
+      <div class="modal-header">
+        <h2>Sign In / Select Role</h2>
+        <button class="close-btn" onclick="toggleAuthModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="role-selector">
+          <button class="role-card active" id="role-customer" onclick="selectRole('customer')">
+            <h4>Customer Account</h4>
+            <p>customer@example.com (ID: 1)</p>
+          </button>
+          <button class="role-card" id="role-admin" onclick="selectRole('admin')">
+            <h4>Store Admin</h4>
+            <p>admin@example.com (ID: 2)</p>
+          </button>
+        </div>
+
+        <form onsubmit="handleLoginSubmit(event)" style="margin-top:16px;">
+          <button type="submit" class="btn btn-primary">Switch Role Context</button>
+        </form>
+
+        <!-- Admin Product Add Section (Shown if admin) -->
+        <div class="admin-panel hidden" id="admin-panel">
+          <hr style="margin:20px 0; border-color:rgba(255,255,255,0.1)">
+          <h3>Admin: Add New Product</h3>
+          <form onsubmit="handleAddProduct(event)" class="admin-form">
+            <input type="text" id="admin-p-name" placeholder="Product Name" required>
+            <input type="text" id="admin-p-desc" placeholder="Description" required>
+            <input type="number" step="0.01" id="admin-p-price" placeholder="Price ($)" required>
+            <input type="number" id="admin-p-stock" placeholder="Stock Quantity" required>
+            <select id="admin-p-category" required>
+              <!-- Filled via JS -->
+            </select>
+            <button type="submit" class="btn btn-success">Add Product to Store</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
