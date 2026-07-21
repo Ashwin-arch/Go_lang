@@ -9,6 +9,7 @@ A repository for Go language projects and applications.
 1. **[🧮 1. Calculator (GUI)](#-1-calculator-gui)**: A desktop GUI calculator built using Go and [Fyne v2](https://fyne.io/).
 2. **[🌐 2. REST API](#-2-rest-api)**: A lightweight, thread-safe RESTful API built in Go using standard library `net/http` and Go 1.22+ routing features.
 3. **[📊 3. GraphQL API](#-3-graphql-api)**: A thread-safe GraphQL API built in Go with nested relational schema, CRUD mutations, unit tests, and an embedded **GraphiQL IDE**.
+4. **[🔒 4. Authentication System](#-4-authentication-system)**: A secure authentication system in Go featuring **Bcrypt password hashing**, **HTTP-Only session cookies**, and a modern **Glassmorphic web interface** (HTML/CSS/JS).
 
 ---
 
@@ -266,3 +267,110 @@ graphql-api/
 
 #### 4. Server Entry Point (`graphql-api/main.go`)
 - Initializes data store, builds schema, registers HTTP handlers on `http.NewServeMux()`, and listens on port `:8080`.
+
+---
+
+## 🔒 4. Authentication System
+
+A secure authentication system in Go featuring **Bcrypt password hashing**, **HTTP-Only session cookies**, and a modern **Glassmorphic web interface** (HTML/CSS/JS).
+
+### ✨ Features
+- **Bcrypt Password Security**: Hashes passwords with `golang.org/x/crypto/bcrypt`.
+- **HTTP-Only Session Cookies**: Mitigates XSS token theft using `HttpOnly` flags and server-side session tokens.
+- **Real-time Password Strength Meter**: Displays visual feedback (Weak, Moderate, Strong) as users type.
+- **Interactive Web Interface**: Custom Glassmorphism UI with HTML5, CSS backdrop filters, glowing orb animations, and Vanilla JS.
+- **Demo Credentials Ready**: Quick fill button for instant login (`demo` / `password123`).
+
+---
+
+### ⚙️ Prerequisites & Running
+
+```bash
+cd auth-system
+go run main.go
+```
+The server will start listening at `http://localhost:8080`.
+
+#### 1. Interactive Web Application
+Open your browser and navigate to:
+👉 **`http://localhost:8080/`**
+
+#### 2. Run Automated Unit Tests
+```bash
+cd auth-system
+go test -v ./...
+```
+
+#### 3. Build Executable Binary
+```bash
+cd auth-system
+go build -o auth-system main.go
+./auth-system
+```
+
+---
+
+### 📡 API Endpoints & cURL Testing
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `http://localhost:8080/api/signup` | Register a new user account |
+| `POST` | `http://localhost:8080/api/login` | Authenticate user & set session cookie |
+| `POST` | `http://localhost:8080/api/logout` | Invalidate session & clear cookie |
+| `GET` | `http://localhost:8080/api/me` | Fetch authenticated user profile |
+| `GET` | `http://localhost:8080/` | Serve Web UI |
+
+#### cURL Test Commands
+
+```bash
+# 1. Login with Demo Account & Save Cookie
+curl -i -c cookies.txt -X POST http://localhost:8080/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"usernameOrEmail":"demo", "password":"password123"}'
+
+# 2. Check Session Status (/api/me)
+curl -i -b cookies.txt http://localhost:8080/api/me
+
+# 3. Register a New User
+curl -i -c cookies.txt -X POST http://localhost:8080/api/signup \
+  -H "Content-Type: application/json" \
+  -d '{"username":"alice", "email":"alice@example.com", "password":"securepassword123", "fullName":"Alice Smith"}'
+
+# 4. Logout
+curl -i -b cookies.txt -X POST http://localhost:8080/api/logout
+```
+
+---
+
+### 📂 Detailed Code Explanations & Architecture
+
+```
+auth-system/
+├── go.mod                # Module definition file
+├── go.sum                # Dependencies checksum
+├── main.go               # Application entry point & HTTP multiplexer
+├── auth_test.go          # Unit & integration tests
+├── models/
+│   └── user.go           # User/Session models, bcrypt hashing & store
+├── handlers/
+│   └── auth_handler.go   # HTTP handlers for auth endpoints
+├── templates/
+│   └── index.html        # Glassmorphic HTML template
+├── static/
+│   ├── style.css         # Custom CSS design system
+│   └── app.js            # Client-side SPA interaction script
+└── README.md             # Project documentation
+```
+
+#### 1. Password Hashing & Sessions (`auth-system/models/user.go`)
+- **Bcrypt Password Security**: Hashes raw passwords upon signup using `bcrypt.GenerateFromPassword(..., bcrypt.DefaultCost)` and verifies credentials via `bcrypt.CompareHashAndPassword(...)`.
+- **Session Tokens**: Generates 32-byte cryptographically secure tokens (`crypto/rand`) valid for 24 hours.
+
+#### 2. HTTP Controller Handlers (`auth-system/handlers/auth_handler.go`)
+- **HTTP-Only Cookies**: Sets `HttpOnly: true`, `SameSite: Lax`, and expiration on session cookies (`session_token`) upon login/signup to shield tokens from client script access.
+- **Session Invalidation**: Clears cookies and deletes session tokens from the server store during logout.
+
+#### 3. Web Interface UI (`templates/index.html` & `static/`)
+- **`templates/index.html`**: Form markup for login, signup, password strength bar, and user profile dashboard.
+- **`static/style.css`**: Backdrop-filter glassmorphism, responsive cards, glowing orb keyframe animations, and status badges.
+- **`static/app.js`**: Dynamic tab switching, realtime password score calculation, AJAX API request handling, and toast notifications.
