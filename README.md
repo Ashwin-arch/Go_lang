@@ -33,6 +33,7 @@ To build a standalone desktop executable:
 ```bash
 cd calculator
 go build -o calculator main.go
+./calculator
 ```
 
 ### 📂 Detailed Code Explanations & Architecture (`calculator/main.go`)
@@ -251,44 +252,17 @@ graphql-api/
 ```
 
 #### 1. Data Model & Concurrency (`graphql-api/models/store.go`)
-- **`Author` & `Book` Structs**:
-  ```go
-  type Author struct {
-      ID   string `json:"id"`
-      Name string `json:"name"`
-      Bio  string `json:"bio"`
-  }
-
-  type Book struct {
-      ID       string  `json:"id"`
-      Title    string  `json:"title"`
-      AuthorID string  `json:"authorId"`
-      Price    float64 `json:"price"`
-  }
-  ```
-- **Thread-Safe Data Store (`Store`)**:
-  - Encapsulates `authors map[string]Author` and `books map[string]Book` behind `sync.RWMutex`.
-  - Provides concurrency-safe methods: `GetAllBooks()`, `GetBookByID()`, `GetBooksByAuthorID()`, `CreateBook()`, `UpdateBook()`, `DeleteBook()`, `GetAllAuthors()`, `GetAuthorByID()`, `CreateAuthor()`, `UpdateAuthor()`, `DeleteAuthor()`.
+- **`Author` & `Book` Structs**: Encapsulates entity attributes.
+- **Thread-Safe Data Store (`Store`)**: Encapsulates maps behind `sync.RWMutex` to allow concurrent safe operations across goroutines.
 
 #### 2. GraphQL Schema & Resolvers (`graphql-api/schema/schema.go`)
-- **GraphQL Object Types (`graphql.NewObject`)**:
-  - Defines `AuthorType` and `BookType` with `graphql.FieldsThunk`.
-  - **Nested Resolver for `Book.author`**: Looks up author in `store.GetAuthorByID(book.AuthorID)` when queried.
-  - **Nested Resolver for `Author.books`**: Queries `store.GetBooksByAuthorID(author.ID)` to return all books written by the author.
-- **Root Query (`Query`)**:
-  - `books`: Supports optional `authorId` and `maxPrice` argument filters.
-  - `book(id)`: Fetches a single book by ID.
-  - `authors` & `author(id)`: Fetch all authors or single author.
-- **Root Mutations (`Mutation`)**:
-  - Provides mutations for creating, updating, and deleting books and authors.
-- **Automated Tests (`schema/schema_test.go`)**:
-  - Validates queries and mutations against `graphql.Do(...)` in memory without spawning a network server.
+- **GraphQL Object Types & Thunks**: Uses `graphql.FieldsThunk` to resolve circular references between `Author` and `Book`.
+- **Relational Resolvers**: `Book.author` resolves author by ID; `Author.books` resolves all books by author ID.
+- **Queries & Mutations**: Configures `Query` and `Mutation` root objects with arguments and resolver handlers.
 
 #### 3. HTTP Handler & GraphiQL IDE (`graphql-api/handlers/graphql.go`)
-- **HTTP Routing**:
-  - Handles incoming POST requests by parsing JSON payloads (`{"query": "...", "variables": {...}}`) into `graphql.Params` and executing via `graphql.Do(...)`.
-  - Enables CORS (`Access-Control-Allow-Origin: *`).
-  - Renders an embedded HTML/JS GraphiQL web interface when accessed via GET requests in a browser.
+- **HTTP Routing**: Parses POST JSON query bodies into `graphql.Params` and executes via `graphql.Do(...)`.
+- **GraphiQL Interface**: Detects GET requests in browsers to serve an embedded GraphiQL interface.
 
 #### 4. Server Entry Point (`graphql-api/main.go`)
-- Initializes `models.NewStore()`, constructs `schema.BuildSchema(store)`, wires up handlers on `http.NewServeMux()`, and binds port `:8080`.
+- Initializes data store, builds schema, registers HTTP handlers on `http.NewServeMux()`, and listens on port `:8080`.
